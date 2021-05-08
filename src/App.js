@@ -1,31 +1,44 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 
-const useFadeIn = (duration = 3, delay = 0) => {
-  const element = useRef()
+const useNetwork = (handleOnLineListener, handleOffLineListener) => {
+  const [status, setStatus] = useState(navigator.onLine)
 
-  const fadeIn = () => {
-    if (element.current) {
-      element.current.style.opacity = 1
-      element.current.style.transition = `opacity ${duration}s ease-in-out ${delay}s`
+  const handleChange = () => {
+    setStatus(navigator.onLine)
+
+    if(navigator.onLine) {
+      if (typeof handleOnLineListener === 'function') {
+        handleOnLineListener()
+      }
+    } else {
+      if (typeof handleOffLineListener === 'function') {
+        handleOffLineListener()
+      }
     }
   }
 
   useEffect(() => {
-    fadeIn()
+    window.addEventListener('online', handleChange)
+    window.addEventListener('offline', handleChange)
+
+    return () => {
+      window.removeEventListener('online', handleChange)
+      window.removeEventListener('offline', handleChange)
+    }
   }, [])
 
-  return { ref: element, style: { opacity: 0 } }
+  return status
 }
 
-
 const App = () => {
-  const fadeInTitle = useFadeIn(2)
-  const fadeInP =  useFadeIn(5, 3)
+  const handleOnLine = () => console.log('I am online...!')
+  const handleOffLine = () => console.log('I am offline...!')
+  const status = useNetwork(handleOnLine, handleOffLine)
 
   return (
     <div>
-      <h1 {...fadeInTitle}>Hello Hooks!!!</h1>
-      <p {...fadeInP}>Good morning!</p>
+      <h1>Hello Hooks!!!</h1>
+      <p>{status ? 'Online' : 'Offline'}</p>
     </div>
   )
 }
