@@ -1,34 +1,31 @@
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 
-const useClick = onClick => {
-  const element = useRef()
+const useConfirm = (message, confirmed, canceled = null) => {
+  if (!confirmed || !message || typeof message !== 'string' || typeof confirmed !== 'function') {
+    return
+  }
 
-  useEffect(() => {
-    const current = element.current
-    if (current) {
-      current.addEventListener('click', onClick)
-
-      return () => {
-        current.removeEventListener('click', onClick)
+  const confirmAction = () => {
+    if (window.confirm(message)) {
+      confirmed()
+    } else {
+      if (canceled && typeof canceled === 'function') {
+        canceled()
       }
     }
-  }, [])
+  }
 
-  return element
+  return confirmAction
 }
 
 const App = () => {
-  const title = useClick(() => console.log(title.current))
-  const input = useRef()
-
-  useEffect(() => {
-    setTimeout(() => input.current.focus(), 3000)
-  }, [])
+  const handleDelete = () => console.log('Delete the world...!')
+  const confirmDelete = useConfirm('Are you sure?', handleDelete, () => console.log('canceled.'))
 
   return (
     <div>
-      <h1 ref={title}>Hello Hooks!!!</h1>
-      <input ref={input} type="text" placeholder="name" />
+      <h1>Hello Hooks!!!</h1>
+      <button onClick={confirmDelete}>Delete the world</button>
     </div>
   )
 }
