@@ -1,20 +1,31 @@
 import React, { useState } from 'react'
 
-const App = () => {
-  const [item, setItem] = useState(0)
+const useInput = (initValue, validator) => {
+  const [value, setValue] = useState(initValue)
 
-  const incrementItem = () => setItem(item + 1)
-  const decrementItem = () => setItem(item - 1)
+  const onChange = ({target: {value}}) => {
+    let willUpdate = true
+
+    if (typeof validator === 'function') {
+      willUpdate = (validator(value))
+    }
+
+    if (willUpdate) {
+      setValue(value)
+    }
+  }
+
+  return { value, onChange }
+}
+
+const App = () => {
+  const maxLen = value => value.length <= 10
+  const name = useInput("Mr.", maxLen)
 
   return (
     <>
       <h1>Hello Hooks!!!</h1>
-
-      <div>
-        {item}
-        <button onClick={incrementItem}>+ 1</button>
-        <button onClick={decrementItem}>- 1</button>
-      </div>
+      <input type="text" placeholder="name" {...name} />
     </>
   )
 }
