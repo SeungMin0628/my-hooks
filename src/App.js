@@ -1,30 +1,64 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 
-const useScroll = () => {
-  const [scroll, setScroll] = useState({ x: window.scrollX, y: window.scrollY })
+const useFullscreen = (callback = null) => {
+  const [isFull, setFull] = useState(document.fullscreenElement !== null)
+  const [element] = useState(useRef())
 
-  const onScroll = () => {
-    setScroll({ x: window.scrollX, y: window.scrollY })
+  const runCallback = (isFull) => {
+    if (typeof callback === 'function') {
+      callback(isFull)
+    }
+  }
+
+  const enterFull = () => {
+    if (element.current) {
+      element.current.requestFullscreen()
+    }
+  }
+
+  const exitFull = () => {
+    document.exitFullscreen()
+  }
+
+  const onFullscreenChange = () => {
+    const isFull = document.fullscreenElement !== null
+    setFull(isFull)
+    runCallback(isFull)
   }
 
   useEffect(() => {
-    window.addEventListener('scroll', onScroll)
+    document.addEventListener('fullscreenchange', onFullscreenChange)
 
     return () => {
-      window.removeEventListener('scroll', onScroll)
+      document.removeEventListener('fullscreenchange', onFullscreenChange)
     }
   }, [])
 
-  return scroll
+  return { element, isFull, enterFull, exitFull }
 }
 
-
 const App = () => {
-  const { y } = useScroll()
+  const callback = (isFull) => {
+    if (isFull) {
+      console.log('The image is now fullscreen...!')
+    } else {
+      console.log('The image is now small...!')
+    }
+  }
+
+  const { element, isFull, enterFull, exitFull } = useFullscreen(callback)
 
   return (
-    <div style={{height: '1000vh'}}>
-      <h1 style={{position: 'fixed', color: y > 100 ? 'red' : 'blue'}}>Hello Hooks!!!</h1>
+    <div>
+      <h1>Hello Hooks!!!</h1>
+      <div ref={element}>
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/c/ce/Example_image.png"
+          alt="exmaple"
+        />
+        <button style={{display: isFull ? 'block' : 'none'}} onClick={exitFull}>Exit fullscreen</button>
+      </div>
+      <button onClick={enterFull}>Enter fullscreen</button>
     </div>
   )
 }
