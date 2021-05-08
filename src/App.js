@@ -1,44 +1,30 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
-const useNetwork = (handleOnLineListener, handleOffLineListener) => {
-  const [status, setStatus] = useState(navigator.onLine)
+const useScroll = () => {
+  const [scroll, setScroll] = useState({ x: window.scrollX, y: window.scrollY })
 
-  const handleChange = () => {
-    setStatus(navigator.onLine)
-
-    if(navigator.onLine) {
-      if (typeof handleOnLineListener === 'function') {
-        handleOnLineListener()
-      }
-    } else {
-      if (typeof handleOffLineListener === 'function') {
-        handleOffLineListener()
-      }
-    }
+  const onScroll = () => {
+    setScroll({ x: window.scrollX, y: window.scrollY })
   }
 
   useEffect(() => {
-    window.addEventListener('online', handleChange)
-    window.addEventListener('offline', handleChange)
+    window.addEventListener('scroll', onScroll)
 
     return () => {
-      window.removeEventListener('online', handleChange)
-      window.removeEventListener('offline', handleChange)
+      window.removeEventListener('scroll', onScroll)
     }
   }, [])
 
-  return status
+  return scroll
 }
 
+
 const App = () => {
-  const handleOnLine = () => console.log('I am online...!')
-  const handleOffLine = () => console.log('I am offline...!')
-  const status = useNetwork(handleOnLine, handleOffLine)
+  const { y } = useScroll()
 
   return (
-    <div>
-      <h1>Hello Hooks!!!</h1>
-      <p>{status ? 'Online' : 'Offline'}</p>
+    <div style={{height: '1000vh'}}>
+      <h1 style={{position: 'fixed', color: y > 100 ? 'red' : 'blue'}}>Hello Hooks!!!</h1>
     </div>
   )
 }
