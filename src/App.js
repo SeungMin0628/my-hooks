@@ -1,31 +1,30 @@
 import React from 'react'
 
-const useConfirm = (message, confirmed, canceled = null) => {
-  if (!confirmed || !message || typeof message !== 'string' || typeof confirmed !== 'function') {
-    return
+const usePreventLeave = () => {
+  const preventLeave = (event) => {
+    event.preventDefault()
+    event.returnValue = ''
   }
 
-  const confirmAction = () => {
-    if (window.confirm(message)) {
-      confirmed()
-    } else {
-      if (canceled && typeof canceled === 'function') {
-        canceled()
-      }
-    }
+  const protectLeavePage = () => {
+    window.addEventListener('beforeunload', preventLeave)
   }
 
-  return confirmAction
+  const unprotectLeavePage = () => {
+    window.removeEventListener('beforeunload', preventLeave)
+  }
+
+  return { protectLeavePage, unprotectLeavePage }
 }
 
 const App = () => {
-  const handleDelete = () => console.log('Delete the world...!')
-  const confirmDelete = useConfirm('Are you sure?', handleDelete, () => console.log('canceled.'))
+  const { protectLeavePage, unprotectLeavePage } = usePreventLeave()
 
   return (
     <div>
       <h1>Hello Hooks!!!</h1>
-      <button onClick={confirmDelete}>Delete the world</button>
+      <button onClick={protectLeavePage}>Protect</button>
+      <button onClick={unprotectLeavePage}>Unprotect</button>
     </div>
   )
 }
