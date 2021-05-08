@@ -1,28 +1,31 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 
-const useBeforeLeave = (callable) => {
-  const beforeLeave = (event) => {
-    const { clientY } = event
-    if (clientY <= 0) {
-      callable()
+const useFadeIn = (duration = 3, delay = 0) => {
+  const element = useRef()
+
+  const fadeIn = () => {
+    if (element.current) {
+      element.current.style.opacity = 1
+      element.current.style.transition = `opacity ${duration}s ease-in-out ${delay}s`
     }
   }
 
   useEffect(() => {
-    document.addEventListener('mouseleave', beforeLeave)
-
-    return () => {
-      document.removeEventListener('mouseleave', beforeLeave)
-    }
+    fadeIn()
   }, [])
+
+  return { ref: element, style: { opacity: 0 } }
 }
 
+
 const App = () => {
-  useBeforeLeave(() => { console.log("please don't leave") })
+  const fadeInTitle = useFadeIn(2)
+  const fadeInP =  useFadeIn(5, 3)
 
   return (
     <div>
-      <h1>Hello Hooks!!!</h1>
+      <h1 {...fadeInTitle}>Hello Hooks!!!</h1>
+      <p {...fadeInP}>Good morning!</p>
     </div>
   )
 }
