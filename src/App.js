@@ -1,30 +1,28 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
-const usePreventLeave = () => {
-  const preventLeave = (event) => {
-    event.preventDefault()
-    event.returnValue = ''
+const useBeforeLeave = (callable) => {
+  const beforeLeave = (event) => {
+    const { clientY } = event
+    if (clientY <= 0) {
+      callable()
+    }
   }
 
-  const protectLeavePage = () => {
-    window.addEventListener('beforeunload', preventLeave)
-  }
+  useEffect(() => {
+    document.addEventListener('mouseleave', beforeLeave)
 
-  const unprotectLeavePage = () => {
-    window.removeEventListener('beforeunload', preventLeave)
-  }
-
-  return { protectLeavePage, unprotectLeavePage }
+    return () => {
+      document.removeEventListener('mouseleave', beforeLeave)
+    }
+  }, [])
 }
 
 const App = () => {
-  const { protectLeavePage, unprotectLeavePage } = usePreventLeave()
+  useBeforeLeave(() => { console.log("please don't leave") })
 
   return (
     <div>
       <h1>Hello Hooks!!!</h1>
-      <button onClick={protectLeavePage}>Protect</button>
-      <button onClick={unprotectLeavePage}>Unprotect</button>
     </div>
   )
 }
