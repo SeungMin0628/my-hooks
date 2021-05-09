@@ -1,64 +1,32 @@
 import React, { useState, useRef, useEffect } from 'react'
 
-const useFullscreen = (callback = null) => {
-  const [isFull, setFull] = useState(document.fullscreenElement !== null)
-  const [element] = useState(useRef())
+const useNotification = (title, options = null) => {
+  if (!('Notification' in window)) {
+    return
+  }
 
-  const runCallback = (isFull) => {
-    if (typeof callback === 'function') {
-      callback(isFull)
+  const fireNotification = () => {
+    if (Notification.permission !== 'granted') {
+      Notification.requestPermission().then(permission => {
+        if (permission !== 'granted') {
+          return
+        }
+      })
     }
+
+    new Notification(title, options)
   }
 
-  const enterFull = () => {
-    if (element.current) {
-      element.current.requestFullscreen()
-    }
-  }
-
-  const exitFull = () => {
-    document.exitFullscreen()
-  }
-
-  const onFullscreenChange = () => {
-    const isFull = document.fullscreenElement !== null
-    setFull(isFull)
-    runCallback(isFull)
-  }
-
-  useEffect(() => {
-    document.addEventListener('fullscreenchange', onFullscreenChange)
-
-    return () => {
-      document.removeEventListener('fullscreenchange', onFullscreenChange)
-    }
-  }, [])
-
-  return { element, isFull, enterFull, exitFull }
+  return fireNotification
 }
 
 const App = () => {
-  const callback = (isFull) => {
-    if (isFull) {
-      console.log('The image is now fullscreen...!')
-    } else {
-      console.log('The image is now small...!')
-    }
-  }
-
-  const { element, isFull, enterFull, exitFull } = useFullscreen(callback)
+  const triggerNotification = useNotification('Hello notification!', { body: 'good evening!' })
 
   return (
     <div>
       <h1>Hello Hooks!!!</h1>
-      <div ref={element}>
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/c/ce/Example_image.png"
-          alt="exmaple"
-        />
-        <button style={{display: isFull ? 'block' : 'none'}} onClick={exitFull}>Exit fullscreen</button>
-      </div>
-      <button onClick={enterFull}>Enter fullscreen</button>
+      <button onClick={triggerNotification}>fire notification</button>
     </div>
   )
 }
